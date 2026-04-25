@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>End Screen Preview</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #000;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+    }
+
+    .taunt-screen {
+      width: 100%;
+      min-height: calc(100vh - 4rem);
+      display: grid;
+      place-items: center;
+      background: #000;
+    }
+
+    .taunt-wrap {
+      width: min(42rem, calc(100vw - 2.4rem));
+      text-align: center;
+    }
+
+    .taunt-time-label,
+    .taunt-time-value {
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      text-transform: uppercase;
+      text-align: center;
+      color: rgba(230, 230, 230, 0.82);
+    }
+
+    .taunt-time-label {
+      margin-bottom: 0.45rem;
+      font-size: clamp(0.8rem, 1.8vw, 1.1rem);
+      letter-spacing: 0.18em;
+    }
+
+    .taunt-time-value {
+      margin-bottom: 1.4rem;
+      font-size: clamp(1.3rem, 3vw, 2rem);
+      letter-spacing: 0.16em;
+    }
+
+    .taunt-text,
+    .taunt-subtext,
+    .taunt-sign,
+    .taunt-light {
+      font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+      text-transform: uppercase;
+      color: #ff2a2a;
+      text-shadow:
+        0 0 0 #8b0000,
+        0.06em 0.06em 0 #8b0000,
+        0.12em 0.12em 0 #550000;
+    }
+
+    .taunt-text {
+      font-size: clamp(2.5rem, 10vw, 8rem);
+      line-height: 0.9;
+    }
+
+    .taunt-subtext {
+      margin-top: 1.7rem;
+      font-size: clamp(1rem, 3vw, 2rem);
+      letter-spacing: 0.04em;
+    }
+
+    .taunt-sign {
+      margin-top: 0.85rem;
+      font-size: clamp(0.85rem, 2vw, 1.35rem);
+      letter-spacing: 0.1em;
+      opacity: 0.92;
+    }
+
+    .taunt-light {
+      margin-top: 1.4rem;
+      font-size: clamp(0.95rem, 2.5vw, 1.65rem);
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+  <section class="taunt-screen" aria-live="polite">
+    <div class="taunt-wrap">
+      <div class="taunt-time-label">Time taken to Click :</div>
+      <div class="taunt-time-value">37.42</div>
+      <div class="taunt-text">You a NERD</div>
+      <div class="taunt-subtext">The button is disappointed that this worked.</div>
+      <div class="taunt-sign">- By The Button</div>
+      <div class="taunt-light">Touch Grass - Light Mode Loser</div>
+    </div>
+  </section>
+</body>
+</html>

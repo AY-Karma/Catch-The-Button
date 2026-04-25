@@ -1,9 +1,0 @@
-@import "tailwindcss";
-
-@layer base {
-  /* Minimal, safe base styles for MVP. Use standard Tailwind tokens. */
-  :root { --bg: #ffffff; --fg: #111827; }
-  body { background: var(--bg); color: var(--fg); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; }
-  /* no custom border-border token; will rely on border classes like border and border-gray-200 */
-  * { @apply border border-gray-200; }
-}

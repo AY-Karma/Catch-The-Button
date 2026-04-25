@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catch Me</title>
+  <style>
+    :root {
+      --page-bg: #000000;
+      --page-text: #f5f5f5;
+      --copy-main: rgba(255, 255, 255, 0.12);
+      --copy-sub: rgba(255, 255, 255, 0.34);
+      --timer-bg: rgba(255, 255, 255, 0.02);
+      --timer-text: rgba(208, 208, 208, 0.42);
+      --panel-bg: rgba(255, 255, 255, 0.04);
+      --panel-border: rgba(255, 255, 255, 0.12);
+      --panel-muted: rgba(220, 220, 220, 0.7);
+      --panel-soft: rgba(255, 255, 255, 0.06);
+      --panel-soft-strong: rgba(255, 255, 255, 0.13);
+      --panel-active: rgba(255, 42, 42, 0.16);
+      --panel-active-border: rgba(255, 42, 42, 0.45);
+      --panel-active-text: #ffd1d1;
+      --toggle-track: rgba(255, 255, 255, 0.12);
+      --toggle-knob: #f2f2f2;
+      --toggle-label: rgba(230, 230, 230, 0.82);
+      --button-text: #111827;
+    }
+
+    body.light-mode {
+      --page-bg: #f4f4f4;
+      --page-text: #101010;
+      --copy-main: rgba(0, 0, 0, 0.14);
+      --copy-sub: rgba(0, 0, 0, 0.42);
+      --timer-bg: rgba(0, 0, 0, 0.035);
+      --timer-text: rgba(40, 40, 40, 0.42);
+      --panel-bg: rgba(0, 0, 0, 0.045);
+      --panel-border: rgba(0, 0, 0, 0.1);
+      --panel-muted: rgba(30, 30, 30, 0.72);
+      --panel-soft: rgba(0, 0, 0, 0.055);
+      --panel-soft-strong: rgba(0, 0, 0, 0.12);
+      --panel-active: rgba(255, 42, 42, 0.12);
+      --panel-active-border: rgba(255, 42, 42, 0.4);
+      --panel-active-text: #7d1111;
+      --toggle-track: rgba(0, 0, 0, 0.15);
+      --toggle-knob: #ffffff;
+      --toggle-label: rgba(25, 25, 25, 0.86);
+      --button-text: #111827;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      overflow: hidden;
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--page-bg);
+      color: var(--page-text);
+    }
+
+    body {
+      position: relative;
+      transition: background-color 240ms ease, color 240ms ease;
+    }
+
+    .scene {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      isolation: isolate;
+      background: var(--page-bg);
+      transition: background-color 240ms ease;
+    }
+
+    .background-copy {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      pointer-events: none;
+      padding: 2rem;
+      transition: opacity 180ms ease;
+    }
+
+    .background-copy h1 {
+      margin: 0;
+      font-size: clamp(2.8rem, 11vw, 8rem);
+      line-height: 0.88;
+      text-transform: uppercase;
+      color: var(--copy-main);
+      text-shadow: 0 0 24px rgba(255, 255, 255, 0.05);
+    }
+
+    body.light-mode .background-copy h1 {
+      text-shadow: none;
+    }
+
+    .background-copy p {
+      margin: 1rem 0 0;
+      font-size: clamp(0.95rem, 2vw, 1.2rem);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--copy-sub);
+    }
+
+    .timer {
+      position: absolute;
+      left: 50%;
+      top: 28%;
+      translate: -50% -50%;
+      min-width: 9.5rem;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      background: var(--timer-bg);
+      opacity: 0.72;
+      pointer-events: none;
+      text-align: center;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      color: var(--timer-text);
+      transition: background-color 240ms ease, color 240ms ease;
+    }
+
+    .button-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    #escapeButton {
+      position: absolute;
+      left: 50%;
+      top: 72%;
+      --button-scale: 1;
+      width: 12rem;
+      height: 4.6rem;
+      border: 0;
+      border-radius: 999px;
+      pointer-events: auto;
+      cursor: pointer;
+      font: inherit;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--button-text);
+      background: linear-gradient(120deg, #22d3ee, #a855f7, #fb7185, #f59e0b, #22d3ee);
+      background-size: 320% 320%;
+      box-shadow:
+        0 18px 40px rgba(17, 24, 39, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.45);
+      transition: transform 120ms ease, box-shadow 180ms ease, filter 180ms ease;
+      will-change: left, top, transform;
+      animation: buttonShift 9s ease-in-out infinite;
+      transform: translate(-50%, -50%) scale(var(--button-scale));
+    }
+
+    #escapeButton:hover {
+      filter: brightness(1.06);
+      box-shadow:
+        0 22px 46px rgba(17, 24, 39, 0.33),
+        inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    }
+
+    #escapeButton:active {
+      --button-scale: 0.98;
+    }
+
+    .start-screen,
+    .taunt-screen {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      background: var(--page-bg);
+      transition: background-color 240ms ease;
+    }
+
+    .start-screen.hidden,
+    .taunt-screen {
+      display: none;
+    }
+
+    .taunt-screen.active {
+      display: grid;
+      background: #000;
+    }
+
+    .start-wrap,
+    .taunt-wrap {
+      width: min(42rem, calc(100vw - 2.4rem));
+      text-align: center;
+    }
+
+    .start-title,
+    .taunt-text {
+      font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+      line-height: 0.9;
+      text-align: center;
+      text-transform: uppercase;
+      color: #ff2a2a;
+      text-shadow:
+        0 0 0 #8b0000,
+        0.08em 0.08em 0 #8b0000,
+        0.16em 0.16em 0 #550000;
+    }
+
+    .start-title {
+      margin: 0;
+      font-size: clamp(2.8rem, 11vw, 7.5rem);
+    }
+
+    .start-menu {
+      margin-top: 2.8rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .menu-card {
+      padding: 1rem 1.1rem;
+      border: 1px solid var(--panel-border);
+      border-radius: 18px;
+      background: var(--panel-bg);
+      transition: background-color 240ms ease, border-color 240ms ease;
+    }
+
+    .menu-card.start-card {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+
+    .menu-card.start-card .menu-card-title {
+      display: none;
+    }
+
+    .menu-card-title {
+      margin: 0 0 0.85rem;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--panel-muted);
+    }
+
+    .start-button {
+      width: 100%;
+      height: 3.7rem;
+      border: 1px solid rgba(255, 42, 42, 0.42);
+      border-radius: 999px;
+      background: rgba(255, 42, 42, 0.1);
+      color: #ffe0e0;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 180ms ease, transform 120ms ease, border-color 180ms ease;
+    }
+
+    .start-button:hover {
+      background: rgba(255, 42, 42, 0.16);
+      border-color: rgba(255, 42, 42, 0.58);
+    }
+
+    .start-button:active {
+      transform: scale(0.985);
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6.6rem;
+    }
+
+    .toggle-label {
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--toggle-label);
+    }
+
+    .toggle {
+      position: relative;
+      width: 4.5rem;
+      height: 2.45rem;
+      border: 0;
+      border-radius: 999px;
+      background: var(--toggle-track);
+      cursor: pointer;
+      transition: background-color 180ms ease;
+    }
+
+    .toggle::after {
+      content: "";
+      position: absolute;
+      top: 0.24rem;
+      left: 0.26rem;
+      width: 1.95rem;
+      height: 1.95rem;
+      border-radius: 50%;
+      background: var(--toggle-knob);
+      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.26);
+      transition: transform 180ms ease;
+    }
+
+    .toggle[aria-checked="true"]::after {
+      transform: translateX(2rem);
+    }
+
+    .toggle-caption {
+      margin-top: 0.85rem;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--panel-muted);
+    }
+
+    .difficulty-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.7rem;
+    }
+
+    .difficulty-option {
+      min-height: 3.5rem;
+      border: 1px solid var(--panel-soft-strong);
+      border-radius: 14px;
+      background: var(--panel-soft);
+      color: var(--panel-muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 120ms ease;
+    }
+
+    .difficulty-option.active {
+      background: var(--panel-active);
+      border-color: var(--panel-active-border);
+      color: var(--panel-active-text);
+    }
+
+    .difficulty-option:active {
+      transform: scale(0.985);
+    }
+
+    .taunt-time-label,
+    .taunt-time-value {
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      text-transform: uppercase;
+      text-align: center;
+      color: rgba(230, 230, 230, 0.82);
+    }
+
+    .taunt-time-label {
+      margin-bottom: 0.45rem;
+      font-size: clamp(0.8rem, 1.8vw, 1.1rem);
+      letter-spacing: 0.18em;
+    }
+
+    .taunt-time-value {
+      margin-bottom: 1.4rem;
+      font-size: clamp(1.3rem, 3vw, 2rem);
+      letter-spacing: 0.16em;
+    }
+
+    .taunt-text {
+      font-size: clamp(2.5rem, 10vw, 8rem);
+    }
+
+    .taunt-subtext,
+    .taunt-sign,
+    .taunt-light {
+      font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+      text-transform: uppercase;
+      color: #ff2a2a;
+      text-shadow:
+        0 0 0 #8b0000,
+        0.06em 0.06em 0 #8b0000,
+        0.12em 0.12em 0 #550000;
+    }
+
+    .taunt-subtext {
+      margin-top: 1.7rem;
+      font-size: clamp(1rem, 3vw, 2rem);
+      letter-spacing: 0.04em;
+    }
+
+    .taunt-sign {
+      margin-top: 0.85rem;
+      font-size: clamp(0.85rem, 2vw, 1.35rem);
+      letter-spacing: 0.1em;
+      opacity: 0.92;
+    }
+
+    .taunt-light {
+      margin-top: 1.4rem;
+      font-size: clamp(0.95rem, 2.5vw, 1.65rem);
+      letter-spacing: 0.05em;
+    }
+
+    @keyframes buttonShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @media (max-width: 700px) {
+      .background-copy p {
+        letter-spacing: 0.12em;
+      }
+
+      .difficulty-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      #escapeButton {
+        width: 10.5rem;
+        height: 4.1rem;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="scene" id="scene">
+    <div class="timer" id="timer">00.00</div>
+
+    <section class="background-copy" id="backgroundCopy" aria-hidden="true">
+      <div>
+        <h1>Touch The Button</h1>
+        <p>Move your mouse and it fades away</p>
+      </div>
+    </section>
+
+    <div class="button-layer">
+      <button id="escapeButton" type="button" aria-label="Impossible button">Try me</button>
+    </div>
+  </main>
+
+  <section class="start-screen" id="startScreen">
+    <div class="start-wrap">
+      <h1 class="start-title">Catch The Button</h1>
+      <div class="start-menu">
+        <section class="menu-card start-card">
+          <h2 class="menu-card-title"></h2>
+          <button class="start-button" id="startGameButton" type="button">Start Game</button>
+        </section>
+
+        <section class="menu-card">
+          <h2 class="menu-card-title">Game Color Toggle</h2>
+          <div class="toggle-row">
+            <span class="toggle-label" id="themeLabel">Dark Mode</span>
+            <button class="toggle" id="themeToggle" type="button" role="switch" aria-checked="false" aria-label="Toggle light mode"></button>
+          </div>
+          <div class="toggle-caption">Switch between light and dark mode before the chase starts.</div>
+        </section>
+
+        <section class="menu-card">
+          <h2 class="menu-card-title">Difficulty Settings</h2>
+          <div class="difficulty-grid" id="difficultyGrid">
+            <button class="difficulty-option active" type="button" data-difficulty="noob">Noob</button>
+            <button class="difficulty-option" type="button" data-difficulty="amateur">Amateur</button>
+            <button class="difficulty-option" type="button" data-difficulty="pro">Pro</button>
+            <button class="difficulty-option" type="button" data-difficulty="god">God</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <section class="taunt-screen" id="tauntScreen" aria-live="polite">
+    <div class="taunt-wrap">
+      <div class="taunt-time-label">Time taken to Click :</div>
+      <div class="taunt-time-value" id="tauntTimeValue">00.00</div>
+      <div class="taunt-text">You a NERD</div>
+      <div class="taunt-subtext" id="tauntSubtext"></div>
+      <div class="taunt-sign" id="tauntSign"></div>
+      <div class="taunt-light" id="tauntLight"></div>
+    </div>
+  </section>
+
+  <script>
+    const scene = document.getElementById("scene");
+    const button = document.getElementById("escapeButton");
+    const timer = document.getElementById("timer");
+    const backgroundCopy = document.getElementById("backgroundCopy");
+    const startScreen = document.getElementById("startScreen");
+    const startGameButton = document.getElementById("startGameButton");
+    const themeToggle = document.getElementById("themeToggle");
+    const themeLabel = document.getElementById("themeLabel");
+    const difficultyGrid = document.getElementById("difficultyGrid");
+    const tauntScreen = document.getElementById("tauntScreen");
+    const tauntTimeValue = document.getElementById("tauntTimeValue");
+    const tauntSubtext = document.getElementById("tauntSubtext");
+    const tauntSign = document.getElementById("tauntSign");
+    const tauntLight = document.getElementById("tauntLight");
+
+    const difficultyProfiles = {
+      noob: {
+        radiusScale: 0.52,
+        travelBoost: -72,
+        randomSwing: -1.1,
+        randomDistance: -0.42,
+        motionEase: -0.1,
+        edgeBias: 2.05,
+      },
+      amateur: {
+        radiusScale: 0.66,
+        travelBoost: -44,
+        randomSwing: -0.78,
+        randomDistance: -0.28,
+        motionEase: -0.07,
+        edgeBias: 1.45,
+      },
+      pro: {
+        radiusScale: 1.08,
+        travelBoost: 24,
+        randomSwing: 0.22,
+        randomDistance: 0.08,
+        motionEase: 0.015,
+        edgeBias: -0.15,
+      },
+      god: {
+        radiusScale: 1.2,
+        travelBoost: 48,
+        randomSwing: 0.46,
+        randomDistance: 0.16,
+        motionEase: 0.04,
+        edgeBias: -0.38,
+      },
+    };
+
+    const taunts = [
+      "Thirty seconds and you still committed to this.",
+      "That much focus for one button is a rough look.",
+      "You really spent all that time proving a point.",
+      "The button is disappointed that this worked.",
+      "An entire chase, and this was the victory lap.",
+      "This is what persistence looks like when misapplied."
+    ];
+
+    const state = {
+      x: window.innerWidth / 2,
+      y: window.innerHeight * 0.72,
+      targetX: window.innerWidth / 2,
+      targetY: window.innerHeight * 0.72,
+      pointerX: window.innerWidth / 2,
+      pointerY: window.innerHeight / 2,
+      buttonWidth: 192,
+      buttonHeight: 74,
+      lastPointerMoveAt: 0,
+      pointerActive: false,
+      copyHidden: false,
+      timerStarted: false,
+      timerStartAt: 0,
+      gameStarted: false,
+      theme: "dark",
+      difficulty: "noob",
+    };
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function formatElapsed(seconds) {
+      return seconds.toFixed(2).padStart(5, "0");
+    }
+
+    function getElapsedSeconds() {
+      if (!state.timerStarted) {
+        return 0;
+      }
+
+      return (performance.now() - state.timerStartAt) / 1000;
+    }
+
+    function getEaseFactor() {
+      const elapsed = getElapsedSeconds();
+      if (elapsed <= 30) {
+        return 0;
+      }
+
+      const stepCount = Math.floor((elapsed - 30) / 10) + 1;
+      return clamp(stepCount * 0.2, 0, 1);
+    }
+
+    function getProfile() {
+      return difficultyProfiles[state.difficulty];
+    }
+
+    function updateThemeUI() {
+      const isLight = state.theme === "light";
+      document.body.classList.toggle("light-mode", isLight);
+      themeToggle.setAttribute("aria-checked", String(isLight));
+      themeLabel.textContent = isLight ? "Light Mode" : "Dark Mode";
+    }
+
+    function updateDifficultyUI() {
+      const options = difficultyGrid.querySelectorAll(".difficulty-option");
+      options.forEach((option) => {
+        option.classList.toggle("active", option.dataset.difficulty === state.difficulty);
+      });
+    }
+
+    function measureButton() {
+      const rect = button.getBoundingClientRect();
+      state.buttonWidth = rect.width;
+      state.buttonHeight = rect.height;
+    }
+
+    function setInitialPosition() {
+      measureButton();
+      state.x = window.innerWidth / 2;
+      state.y = window.innerHeight * 0.72;
+      state.targetX = state.x;
+      state.targetY = state.y;
+      state.pointerX = window.innerWidth / 2;
+      state.pointerY = window.innerHeight / 2;
+      state.pointerActive = false;
+      state.lastPointerMoveAt = 0;
+      state.copyHidden = false;
+      state.timerStarted = false;
+      state.timerStartAt = 0;
+      timer.textContent = "00.00";
+      backgroundCopy.style.opacity = "1";
+      button.style.left = state.x + "px";
+      button.style.top = state.y + "px";
+    }
+
+    function updatePointerState() {
+      const elapsed = performance.now() - state.lastPointerMoveAt;
+      state.pointerActive = elapsed < 180;
+    }
+
+    function startTimerIfNeeded() {
+      if (!state.timerStarted) {
+        state.timerStarted = true;
+        state.timerStartAt = performance.now();
+      }
+    }
+
+    function pickEscapeTarget(pointerX, pointerY, strength) {
+      const profile = getProfile();
+      const easeFactor = getEaseFactor();
+      const padding = 18;
+      const minX = state.buttonWidth / 2 + padding;
+      const maxX = window.innerWidth - state.buttonWidth / 2 - padding;
+      const minY = state.buttonHeight / 2 + padding;
+      const maxY = window.innerHeight - state.buttonHeight / 2 - padding;
+      const awayAngle = Math.atan2(state.y - pointerY || Math.random() - 0.5, state.x - pointerX || Math.random() - 0.5);
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const centerAngle = Math.atan2(centerY - state.y, centerX - state.x);
+      const travel = 90 + profile.travelBoost + strength * (170 - easeFactor * 65);
+      let best = {
+        x: clamp(state.x + Math.cos(awayAngle) * travel, minX, maxX),
+        y: clamp(state.y + Math.sin(awayAngle) * travel, minY, maxY),
+        score: -Infinity,
+      };
+
+      for (let i = 0; i < 14; i += 1) {
+        const randomSwing = (Math.random() - 0.5) * clamp(1.8 - easeFactor * 0.8 + profile.randomSwing, 0.5, 2.6);
+        const mix = clamp(0.28 + Math.random() * (0.28 - easeFactor * 0.1), 0.18, 0.52);
+        const angle = awayAngle * (1 - mix) + centerAngle * mix + randomSwing;
+        const distance = travel * clamp(0.82 + Math.random() * (0.65 - easeFactor * 0.22 + profile.randomDistance), 0.62, 1.55);
+        const candidateX = clamp(state.x + Math.cos(angle) * distance, minX, maxX);
+        const candidateY = clamp(state.y + Math.sin(angle) * distance, minY, maxY);
+        const pointerDistance = Math.hypot(candidateX - pointerX, candidateY - pointerY);
+        const edgeClearance = Math.min(candidateX - minX, maxX - candidateX, candidateY - minY, maxY - candidateY);
+        const centerDistance = Math.hypot(candidateX - centerX, candidateY - centerY);
+        const score = pointerDistance + edgeClearance * (1.9 + easeFactor * 0.8 + profile.edgeBias) - centerDistance * 0.18 + Math.random() * (24 - easeFactor * 12);
+
+        if (score > best.score) {
+          best = { x: candidateX, y: candidateY, score };
+        }
+      }
+
+      state.targetX = best.x;
+      state.targetY = best.y;
+    }
+
+    function evade(pointerX, pointerY) {
+      if (!state.gameStarted) {
+        return;
+      }
+
+      const profile = getProfile();
+      const dx = state.x - pointerX;
+      const dy = state.y - pointerY;
+      const distance = Math.hypot(dx, dy);
+      const easeFactor = getEaseFactor();
+      const activeRadius = Math.max(
+        160,
+        Math.min(window.innerWidth, window.innerHeight) * (0.34 * profile.radiusScale - easeFactor * 0.06)
+      );
+
+      if (distance >= activeRadius) {
+        return;
+      }
+
+      const strength = (activeRadius - distance) / activeRadius;
+      pickEscapeTarget(pointerX, pointerY, strength);
+    }
+
+    function animate() {
+      updatePointerState();
+      const easeFactor = getEaseFactor();
+      const profile = getProfile();
+      const motionEase = clamp(0.22 + profile.motionEase - easeFactor * 0.07, 0.09, 0.28);
+
+      state.x += (state.targetX - state.x) * motionEase;
+      state.y += (state.targetY - state.y) * motionEase;
+      button.style.left = state.x + "px";
+      button.style.top = state.y + "px";
+
+      const restingOpacity = parseFloat(backgroundCopy.style.opacity || "1");
+      const fadeTarget = state.copyHidden ? 0 : 1;
+      backgroundCopy.style.opacity = String(restingOpacity + (fadeTarget - restingOpacity) * 0.12);
+
+      if (state.timerStarted) {
+        timer.textContent = formatElapsed(getElapsedSeconds());
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function beginGame() {
+      state.gameStarted = true;
+      startScreen.classList.add("hidden");
+      setInitialPosition();
+    }
+
+    function handlePointerLikeMove(x, y) {
+      if (!state.gameStarted) {
+        return;
+      }
+
+      startTimerIfNeeded();
+      state.lastPointerMoveAt = performance.now();
+      state.copyHidden = true;
+      state.pointerX = x;
+      state.pointerY = y;
+      evade(x, y);
+    }
+
+    themeToggle.addEventListener("click", () => {
+      state.theme = state.theme === "dark" ? "light" : "dark";
+      updateThemeUI();
+    });
+
+    difficultyGrid.addEventListener("click", (event) => {
+      const option = event.target.closest(".difficulty-option");
+      if (!option) {
+        return;
+      }
+
+      state.difficulty = option.dataset.difficulty;
+      updateDifficultyUI();
+    });
+
+    startGameButton.addEventListener("click", beginGame);
+
+    scene.addEventListener("pointermove", (event) => {
+      handlePointerLikeMove(event.clientX, event.clientY);
+    });
+
+    scene.addEventListener("touchstart", (event) => {
+      const touch = event.touches[0];
+      if (!touch) {
+        return;
+      }
+
+      handlePointerLikeMove(touch.clientX, touch.clientY);
+    }, { passive: true });
+
+    scene.addEventListener("touchmove", (event) => {
+      const touch = event.touches[0];
+      if (!touch) {
+        return;
+      }
+
+      handlePointerLikeMove(touch.clientX, touch.clientY);
+    }, { passive: true });
+
+    button.addEventListener("pointerenter", () => {
+      if (!state.gameStarted) {
+        return;
+      }
+
+      state.copyHidden = false;
+      evade(state.pointerX, state.pointerY);
+    });
+
+    button.addEventListener("touchstart", () => {
+      if (!state.gameStarted) {
+        return;
+      }
+
+      state.copyHidden = false;
+    }, { passive: true });
+
+    button.addEventListener("click", () => {
+      if (!state.gameStarted) {
+        return;
+      }
+
+      const elapsed = getElapsedSeconds();
+      tauntTimeValue.textContent = formatElapsed(elapsed);
+
+      if (elapsed >= 30) {
+        tauntSubtext.textContent = taunts[Math.floor(Math.random() * taunts.length)];
+        tauntSign.textContent = "- By The Button";
+      } else {
+        tauntSubtext.textContent = "";
+        tauntSign.textContent = "";
+      }
+
+      tauntLight.textContent = state.theme === "light" ? "Touch Grass - Light Mode Loser" : "";
+      tauntScreen.classList.add("active");
+    });
+
+    window.addEventListener("resize", () => {
+      setInitialPosition();
+    });
+
+    updateThemeUI();
+    updateDifficultyUI();
+    setInitialPosition();
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
