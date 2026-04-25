@@ -45,6 +45,11 @@
       --toggle-knob: #ffffff;
       --toggle-label: rgba(25, 25, 25, 0.86);
       --button-text: #111827;
+      --start-button-bg: rgba(185, 28, 28, 0.12);
+      --start-button-border: rgba(185, 28, 28, 0.42);
+      --start-button-text: #7f1d1d;
+      --start-button-hover-bg: rgba(185, 28, 28, 0.18);
+      --start-button-hover-border: rgba(185, 28, 28, 0.58);
     }
 
     * {
@@ -255,10 +260,10 @@
     .start-button {
       width: 100%;
       height: 3.7rem;
-      border: 1px solid rgba(255, 42, 42, 0.42);
+      border: 1px solid var(--start-button-border, rgba(255, 42, 42, 0.42));
       border-radius: 999px;
-      background: rgba(255, 42, 42, 0.1);
-      color: #ffe0e0;
+      background: var(--start-button-bg, rgba(255, 42, 42, 0.1));
+      color: var(--start-button-text, #ffe0e0);
       font-family: "Trebuchet MS", "Segoe UI", sans-serif;
       font-size: 1rem;
       font-weight: 800;
@@ -269,8 +274,8 @@
     }
 
     .start-button:hover {
-      background: rgba(255, 42, 42, 0.16);
-      border-color: rgba(255, 42, 42, 0.58);
+      background: var(--start-button-hover-bg, rgba(255, 42, 42, 0.16));
+      border-color: var(--start-button-hover-border, rgba(255, 42, 42, 0.58));
     }
 
     .start-button:active {
@@ -748,6 +753,26 @@
       setInitialPosition();
     }
 
+    function showEndScreen() {
+      if (!state.gameStarted || tauntScreen.classList.contains("active")) {
+        return;
+      }
+
+      const elapsed = getElapsedSeconds();
+      tauntTimeValue.textContent = formatElapsed(elapsed);
+
+      if (elapsed >= 30) {
+        tauntSubtext.textContent = taunts[Math.floor(Math.random() * taunts.length)];
+        tauntSign.textContent = "- By The Button";
+      } else {
+        tauntSubtext.textContent = "";
+        tauntSign.textContent = "";
+      }
+
+      tauntLight.textContent = state.theme === "light" ? "Touch Grass - Light Mode Loser" : "";
+      tauntScreen.classList.add("active");
+    }
+
     function handlePointerLikeMove(x, y) {
       if (!state.gameStarted) {
         return;
@@ -806,7 +831,6 @@
       }
 
       state.copyHidden = false;
-      evade(state.pointerX, state.pointerY);
     });
 
     button.addEventListener("touchstart", () => {
@@ -817,24 +841,17 @@
       state.copyHidden = false;
     }, { passive: true });
 
-    button.addEventListener("click", () => {
+    button.addEventListener("pointerdown", (event) => {
       if (!state.gameStarted) {
         return;
       }
 
-      const elapsed = getElapsedSeconds();
-      tauntTimeValue.textContent = formatElapsed(elapsed);
+      event.preventDefault();
+      showEndScreen();
+    });
 
-      if (elapsed >= 30) {
-        tauntSubtext.textContent = taunts[Math.floor(Math.random() * taunts.length)];
-        tauntSign.textContent = "- By The Button";
-      } else {
-        tauntSubtext.textContent = "";
-        tauntSign.textContent = "";
-      }
-
-      tauntLight.textContent = state.theme === "light" ? "Touch Grass - Light Mode Loser" : "";
-      tauntScreen.classList.add("active");
+    button.addEventListener("click", () => {
+      showEndScreen();
     });
 
     window.addEventListener("resize", () => {
