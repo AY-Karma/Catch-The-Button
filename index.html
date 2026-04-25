@@ -597,16 +597,6 @@
       return (performance.now() - state.timerStartAt) / 1000;
     }
 
-    function getEaseFactor() {
-      const elapsed = getElapsedSeconds();
-      if (elapsed <= 30) {
-        return 0;
-      }
-
-      const stepCount = Math.floor((elapsed - 30) / 10) + 1;
-      return clamp(stepCount * 0.2, 0, 1);
-    }
-
     function getProfile() {
       return difficultyProfiles[state.difficulty];
     }
@@ -664,7 +654,6 @@
 
     function pickEscapeTarget(pointerX, pointerY, strength) {
       const profile = getProfile();
-      const easeFactor = getEaseFactor();
       const padding = 18;
       const minX = state.buttonWidth / 2 + padding;
       const maxX = window.innerWidth - state.buttonWidth / 2 - padding;
@@ -674,7 +663,7 @@
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
       const centerAngle = Math.atan2(centerY - state.y, centerX - state.x);
-      const travel = 90 + profile.travelBoost + strength * (170 - easeFactor * 65);
+      const travel = 90 + profile.travelBoost + strength * 170;
       let best = {
         x: clamp(state.x + Math.cos(awayAngle) * travel, minX, maxX),
         y: clamp(state.y + Math.sin(awayAngle) * travel, minY, maxY),
@@ -682,16 +671,16 @@
       };
 
       for (let i = 0; i < 14; i += 1) {
-        const randomSwing = (Math.random() - 0.5) * clamp(1.8 - easeFactor * 0.8 + profile.randomSwing, 0.5, 2.6);
-        const mix = clamp(0.28 + Math.random() * (0.28 - easeFactor * 0.1), 0.18, 0.52);
+        const randomSwing = (Math.random() - 0.5) * clamp(1.8 + profile.randomSwing, 0.5, 2.6);
+        const mix = clamp(0.28 + Math.random() * 0.28, 0.18, 0.52);
         const angle = awayAngle * (1 - mix) + centerAngle * mix + randomSwing;
-        const distance = travel * clamp(0.82 + Math.random() * (0.65 - easeFactor * 0.22 + profile.randomDistance), 0.62, 1.55);
+        const distance = travel * clamp(0.82 + Math.random() * (0.65 + profile.randomDistance), 0.62, 1.55);
         const candidateX = clamp(state.x + Math.cos(angle) * distance, minX, maxX);
         const candidateY = clamp(state.y + Math.sin(angle) * distance, minY, maxY);
         const pointerDistance = Math.hypot(candidateX - pointerX, candidateY - pointerY);
         const edgeClearance = Math.min(candidateX - minX, maxX - candidateX, candidateY - minY, maxY - candidateY);
         const centerDistance = Math.hypot(candidateX - centerX, candidateY - centerY);
-        const score = pointerDistance + edgeClearance * (1.9 + easeFactor * 0.8 + profile.edgeBias) - centerDistance * 0.18 + Math.random() * (24 - easeFactor * 12);
+        const score = pointerDistance + edgeClearance * (1.9 + profile.edgeBias) - centerDistance * 0.18 + Math.random() * 24;
 
         if (score > best.score) {
           best = { x: candidateX, y: candidateY, score };
@@ -711,11 +700,7 @@
       const dx = state.x - pointerX;
       const dy = state.y - pointerY;
       const distance = Math.hypot(dx, dy);
-      const easeFactor = getEaseFactor();
-      const activeRadius = Math.max(
-        160,
-        Math.min(window.innerWidth, window.innerHeight) * (0.34 * profile.radiusScale - easeFactor * 0.06)
-      );
+      const activeRadius = Math.max(160, Math.min(window.innerWidth, window.innerHeight) * (0.34 * profile.radiusScale));
 
       if (distance >= activeRadius) {
         return;
@@ -727,9 +712,8 @@
 
     function animate() {
       updatePointerState();
-      const easeFactor = getEaseFactor();
       const profile = getProfile();
-      const motionEase = clamp(0.22 + profile.motionEase - easeFactor * 0.07, 0.09, 0.28);
+      const motionEase = clamp(0.22 + profile.motionEase, 0.09, 0.28);
 
       state.x += (state.targetX - state.x) * motionEase;
       state.y += (state.targetY - state.y) * motionEase;
