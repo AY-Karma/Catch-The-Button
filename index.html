@@ -81,38 +81,6 @@
       transition: background-color 240ms ease;
     }
 
-    .background-copy {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      pointer-events: none;
-      padding: 2rem;
-      transition: opacity 180ms ease;
-    }
-
-    .background-copy h1 {
-      margin: 0;
-      font-size: clamp(2.8rem, 11vw, 8rem);
-      line-height: 0.88;
-      text-transform: uppercase;
-      color: var(--copy-main);
-      text-shadow: 0 0 24px rgba(255, 255, 255, 0.05);
-    }
-
-    body.light-mode .background-copy h1 {
-      text-shadow: none;
-    }
-
-    .background-copy p {
-      margin: 1rem 0 0;
-      font-size: clamp(0.95rem, 2vw, 1.2rem);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--copy-sub);
-    }
-
     .timer {
       position: absolute;
       left: 50%;
@@ -367,7 +335,8 @@
     }
 
     .taunt-time-label,
-    .taunt-time-value {
+    .taunt-time-value,
+    .taunt-mode {
       font-family: "Trebuchet MS", "Segoe UI", sans-serif;
       text-transform: uppercase;
       text-align: center;
@@ -384,6 +353,12 @@
       margin-bottom: 1.4rem;
       font-size: clamp(1.3rem, 3vw, 2rem);
       letter-spacing: 0.16em;
+    }
+
+    .taunt-mode {
+      margin-bottom: 1.2rem;
+      font-size: clamp(0.85rem, 2vw, 1.1rem);
+      letter-spacing: 0.18em;
     }
 
     .taunt-text {
@@ -428,10 +403,6 @@
     }
 
     @media (max-width: 700px) {
-      .background-copy p {
-        letter-spacing: 0.12em;
-      }
-
       .difficulty-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -447,13 +418,6 @@
 <body>
   <main class="scene" id="scene">
     <div class="timer" id="timer">00.00</div>
-
-    <section class="background-copy" id="backgroundCopy" aria-hidden="true">
-      <div>
-        <h1>Touch The Button</h1>
-        <p>Move your mouse and it fades away</p>
-      </div>
-    </section>
 
     <div class="button-layer">
       <button id="escapeButton" type="button" aria-label="Impossible button">Try me</button>
@@ -495,7 +459,8 @@
     <div class="taunt-wrap">
       <div class="taunt-time-label">Time taken to Click :</div>
       <div class="taunt-time-value" id="tauntTimeValue">00.00</div>
-      <div class="taunt-text">You a NERD</div>
+      <div class="taunt-mode" id="tauntMode">Mode: Noob</div>
+      <div class="taunt-text" id="tauntText">You a NERD</div>
       <div class="taunt-subtext" id="tauntSubtext"></div>
       <div class="taunt-sign" id="tauntSign"></div>
       <div class="taunt-light" id="tauntLight"></div>
@@ -506,7 +471,6 @@
     const scene = document.getElementById("scene");
     const button = document.getElementById("escapeButton");
     const timer = document.getElementById("timer");
-    const backgroundCopy = document.getElementById("backgroundCopy");
     const startScreen = document.getElementById("startScreen");
     const startGameButton = document.getElementById("startGameButton");
     const themeToggle = document.getElementById("themeToggle");
@@ -514,6 +478,8 @@
     const difficultyGrid = document.getElementById("difficultyGrid");
     const tauntScreen = document.getElementById("tauntScreen");
     const tauntTimeValue = document.getElementById("tauntTimeValue");
+    const tauntMode = document.getElementById("tauntMode");
+    const tauntText = document.getElementById("tauntText");
     const tauntSubtext = document.getElementById("tauntSubtext");
     const tauntSign = document.getElementById("tauntSign");
     const tauntLight = document.getElementById("tauntLight");
@@ -562,6 +528,29 @@
       "This is what persistence looks like when misapplied."
     ];
 
+    const endScreenHeadlines = {
+      noob: {
+        under10: "Move on to Amateur, Buddy",
+        under30: "Are you an UNC??",
+        over30: "Just close the lid and fix your life already",
+      },
+      amateur: {
+        under10: "Alright... you might actually belong here.",
+        under30: "Comfort zone detected. Still trying?",
+        over30: "Graduation was an option, you know.",
+      },
+      pro: {
+        under10: "Okay, that was clean. Respect.",
+        under30: "Pro? Or just lucky this time?",
+        over30: "That title is looking a bit... rented.",
+      },
+      god: {
+        under10: "That was unreal. Seriously impressive.",
+        under30: "Well played. That's no easy feat.",
+        over30: "You held your ground. This mode isn't forgiving.",
+      },
+    };
+
     const state = {
       x: window.innerWidth / 2,
       y: window.innerHeight * 0.72,
@@ -601,6 +590,17 @@
       return difficultyProfiles[state.difficulty];
     }
 
+    function getHeadlineForResult(difficulty, elapsed) {
+      const copy = endScreenHeadlines[difficulty];
+      if (elapsed < 10) {
+        return copy.under10;
+      }
+      if (elapsed < 30) {
+        return copy.under30;
+      }
+      return copy.over30;
+    }
+
     function updateThemeUI() {
       const isLight = state.theme === "light";
       document.body.classList.toggle("light-mode", isLight);
@@ -635,7 +635,6 @@
       state.timerStarted = false;
       state.timerStartAt = 0;
       timer.textContent = "00.00";
-      backgroundCopy.style.opacity = "1";
       button.style.left = state.x + "px";
       button.style.top = state.y + "px";
     }
@@ -720,10 +719,6 @@
       button.style.left = state.x + "px";
       button.style.top = state.y + "px";
 
-      const restingOpacity = parseFloat(backgroundCopy.style.opacity || "1");
-      const fadeTarget = state.copyHidden ? 0 : 1;
-      backgroundCopy.style.opacity = String(restingOpacity + (fadeTarget - restingOpacity) * 0.12);
-
       if (state.timerStarted) {
         timer.textContent = formatElapsed(getElapsedSeconds());
       }
@@ -744,6 +739,8 @@
 
       const elapsed = getElapsedSeconds();
       tauntTimeValue.textContent = formatElapsed(elapsed);
+      tauntMode.textContent = "Mode: " + state.difficulty.charAt(0).toUpperCase() + state.difficulty.slice(1);
+      tauntText.textContent = getHeadlineForResult(state.difficulty, elapsed);
 
       if (elapsed >= 30) {
         tauntSubtext.textContent = taunts[Math.floor(Math.random() * taunts.length)];
