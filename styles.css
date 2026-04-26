@@ -1,0 +1,431 @@
+:root {
+  --page-bg: #000000;
+  --page-text: #f5f5f5;
+  --copy-main: rgba(255, 255, 255, 0.12);
+  --copy-sub: rgba(255, 255, 255, 0.34);
+  --timer-bg: rgba(255, 255, 255, 0.02);
+  --timer-text: rgba(208, 208, 208, 0.42);
+  --panel-bg: rgba(255, 255, 255, 0.04);
+  --panel-border: rgba(255, 255, 255, 0.12);
+  --panel-muted: rgba(220, 220, 220, 0.7);
+  --panel-soft: rgba(255, 255, 255, 0.06);
+  --panel-soft-strong: rgba(255, 255, 255, 0.13);
+  --panel-active: rgba(255, 42, 42, 0.16);
+  --panel-active-border: rgba(255, 42, 42, 0.45);
+  --panel-active-text: #ffd1d1;
+  --toggle-track: rgba(255, 255, 255, 0.12);
+  --toggle-knob: #f2f2f2;
+  --toggle-label: rgba(230, 230, 230, 0.82);
+  --button-text: #111827;
+}
+
+body.light-mode {
+  --page-bg: #f4f4f4;
+  --page-text: #101010;
+  --copy-main: rgba(0, 0, 0, 0.14);
+  --copy-sub: rgba(0, 0, 0, 0.42);
+  --timer-bg: rgba(0, 0, 0, 0.035);
+  --timer-text: rgba(40, 40, 40, 0.42);
+  --panel-bg: rgba(0, 0, 0, 0.045);
+  --panel-border: rgba(0, 0, 0, 0.1);
+  --panel-muted: rgba(30, 30, 30, 0.72);
+  --panel-soft: rgba(0, 0, 0, 0.055);
+  --panel-soft-strong: rgba(0, 0, 0, 0.12);
+  --panel-active: rgba(255, 42, 42, 0.12);
+  --panel-active-border: rgba(255, 42, 42, 0.4);
+  --panel-active-text: #7d1111;
+  --toggle-track: rgba(0, 0, 0, 0.15);
+  --toggle-knob: #ffffff;
+  --toggle-label: rgba(25, 25, 25, 0.86);
+  --button-text: #111827;
+  --start-button-bg: rgba(185, 28, 28, 0.12);
+  --start-button-border: rgba(185, 28, 28, 0.42);
+  --start-button-text: #7f1d1d;
+  --start-button-hover-bg: rgba(185, 28, 28, 0.18);
+  --start-button-hover-border: rgba(185, 28, 28, 0.58);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  overflow: hidden;
+  font-family: Georgia, "Times New Roman", serif;
+  background: var(--page-bg);
+  color: var(--page-text);
+}
+
+body {
+  position: relative;
+  transition: background-color 240ms ease, color 240ms ease;
+}
+
+.scene {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  background: var(--page-bg);
+  transition: background-color 240ms ease;
+}
+
+.timer {
+  position: absolute;
+  left: 50%;
+  top: 28%;
+  translate: -50% -50%;
+  min-width: 9.5rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  background: var(--timer-bg);
+  opacity: 0.72;
+  pointer-events: none;
+  text-align: center;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--timer-text);
+  transition: background-color 240ms ease, color 240ms ease;
+}
+
+.button-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#escapeButton {
+  position: absolute;
+  left: 50%;
+  top: 72%;
+  --button-scale: 1;
+  width: 12rem;
+  height: 4.6rem;
+  border: 0;
+  border-radius: 999px;
+  pointer-events: auto;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--button-text);
+  background: linear-gradient(120deg, #22d3ee, #a855f7, #fb7185, #f59e0b, #22d3ee);
+  background-size: 320% 320%;
+  box-shadow:
+    0 18px 40px rgba(17, 24, 39, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  transition: transform 120ms ease, box-shadow 180ms ease, filter 180ms ease;
+  will-change: left, top, transform;
+  animation: buttonShift 9s ease-in-out infinite;
+  transform: translate(-50%, -50%) scale(var(--button-scale));
+}
+
+#escapeButton:hover {
+  filter: brightness(1.06);
+  box-shadow:
+    0 22px 46px rgba(17, 24, 39, 0.33),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+#escapeButton:active {
+  --button-scale: 0.98;
+}
+
+.start-screen,
+.taunt-screen {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: var(--page-bg);
+  transition: background-color 240ms ease;
+}
+
+.start-screen.hidden,
+.taunt-screen {
+  display: none;
+}
+
+.taunt-screen.active {
+  display: grid;
+  background: #000;
+}
+
+.start-wrap,
+.taunt-wrap {
+  width: min(42rem, calc(100vw - 2.4rem));
+  text-align: center;
+}
+
+.start-title,
+.taunt-text {
+  font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+  line-height: 0.9;
+  text-align: center;
+  text-transform: uppercase;
+  color: #ff2a2a;
+  text-shadow:
+    0 0 0 #8b0000,
+    0.08em 0.08em 0 #8b0000,
+    0.16em 0.16em 0 #550000;
+}
+
+.start-title {
+  margin: 0;
+  font-size: clamp(2.8rem, 11vw, 7.5rem);
+}
+
+.start-menu {
+  margin-top: 2.8rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.menu-card {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  background: var(--panel-bg);
+  transition: background-color 240ms ease, border-color 240ms ease;
+}
+
+.menu-card.start-card {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.menu-card.start-card .menu-card-title {
+  display: none;
+}
+
+.menu-card-title {
+  margin: 0 0 0.85rem;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--panel-muted);
+}
+
+.start-button {
+  width: 100%;
+  height: 3.7rem;
+  border: 1px solid var(--start-button-border, rgba(255, 42, 42, 0.42));
+  border-radius: 999px;
+  background: var(--start-button-bg, rgba(255, 42, 42, 0.1));
+  color: var(--start-button-text, #ffe0e0);
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 180ms ease, transform 120ms ease, border-color 180ms ease;
+}
+
+.start-button:hover {
+  background: var(--start-button-hover-bg, rgba(255, 42, 42, 0.16));
+  border-color: var(--start-button-hover-border, rgba(255, 42, 42, 0.58));
+}
+
+.start-button:active {
+  transform: scale(0.985);
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.4rem;
+}
+
+.toggle-label {
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--toggle-label);
+}
+
+.toggle {
+  position: relative;
+  width: 4.5rem;
+  height: 2.45rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--toggle-track);
+  cursor: pointer;
+  transition: background-color 180ms ease;
+}
+
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 0.24rem;
+  left: 0.26rem;
+  width: 1.95rem;
+  height: 1.95rem;
+  border-radius: 50%;
+  background: var(--toggle-knob);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.26);
+  transition: transform 180ms ease;
+}
+
+.toggle[aria-checked="true"]::after {
+  transform: translateX(2rem);
+}
+
+.toggle-caption {
+  margin-top: 0.85rem;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--panel-muted);
+}
+
+.difficulty-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.difficulty-option {
+  min-height: 3.5rem;
+  border: 1px solid var(--panel-soft-strong);
+  border-radius: 14px;
+  background: var(--panel-soft);
+  color: var(--panel-muted);
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 120ms ease;
+}
+
+.difficulty-option.active {
+  background: var(--panel-active);
+  border-color: var(--panel-active-border);
+  color: var(--panel-active-text);
+}
+
+.difficulty-option:active {
+  transform: scale(0.985);
+}
+
+.taunt-time-label,
+.taunt-time-value,
+.taunt-mode {
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  text-transform: uppercase;
+  text-align: center;
+  color: rgba(230, 230, 230, 0.82);
+}
+
+.taunt-time-label {
+  margin-bottom: 0.45rem;
+  font-size: clamp(0.8rem, 1.8vw, 1.1rem);
+  letter-spacing: 0.18em;
+}
+
+.taunt-time-value {
+  margin-bottom: 1.4rem;
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  letter-spacing: 0.16em;
+}
+
+.taunt-mode {
+  margin-bottom: 1.2rem;
+  font-size: clamp(0.85rem, 2vw, 1.1rem);
+  letter-spacing: 0.18em;
+}
+
+.taunt-text {
+  font-size: clamp(2.5rem, 10vw, 8rem);
+}
+
+.taunt-actions {
+  margin-top: 3.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4rem;
+  flex-wrap: wrap;
+}
+
+.taunt-action-button {
+  width: auto;
+  min-width: 10.5rem;
+  padding-inline: 1.6rem;
+}
+
+.taunt-subtext,
+.taunt-sign,
+.taunt-light {
+  font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+  text-transform: uppercase;
+  color: #ff2a2a;
+  text-shadow:
+    0 0 0 #8b0000,
+    0.06em 0.06em 0 #8b0000,
+    0.12em 0.12em 0 #550000;
+}
+
+.taunt-subtext {
+  margin-top: 1.7rem;
+  font-size: clamp(1rem, 3vw, 2rem);
+  letter-spacing: 0.04em;
+}
+
+.taunt-sign {
+  margin-top: 0.85rem;
+  font-size: clamp(0.85rem, 2vw, 1.35rem);
+  letter-spacing: 0.1em;
+  opacity: 0.92;
+}
+
+.taunt-light {
+  margin-top: 1.4rem;
+  font-size: clamp(0.95rem, 2.5vw, 1.65rem);
+  letter-spacing: 0.05em;
+}
+
+@keyframes buttonShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@media (max-width: 700px) {
+  .difficulty-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .taunt-actions {
+    gap: 0.8rem;
+  }
+
+  .taunt-action-button {
+    min-width: 9.5rem;
+  }
+
+  #escapeButton {
+    width: 10.5rem;
+    height: 4.1rem;
+    font-size: 1rem;
+  }
+}
